@@ -1,15 +1,19 @@
 # Open Tool Database #
 
+*This project is not ready to be used!*
+
 ## About ##
 
 OTD (Open Tool Database) is a project which goal is to allow penetration tester
-to quickly retrieve commonly used tools and update them. It also offer a
-ordering and grouping of those tools for easier finding.
+to quickly retrieve commonly used tools and update them. It also order and group
+those tools for easier finding.
 
 ## Disclaimer ##
 
-This project has started really recently, so almost a lot of fonctionalities are
+This project has started really recently, so a lot of fonctionalities are
 missing.
+
+You should view it more as proof of concept than a real project for now.
 
 ## How to use ##
 
