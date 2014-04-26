@@ -2,22 +2,22 @@
 
 # Comments regarding tool.
 nmap:
-	
-	# Informations to fetch
-	repository-type: svn
-	resposiroty-url: "https://svn.nmap.org/svn/"
+  
+  # Informations to fetch
+  repository-type: svn
+  resposiroty-url: "https://svn.nmap.org/svn/"
 
-	# Informations to build and update
-	# 	dependencies: informative dependencies
-	#   dep-apt: dependencies, apt package names
-	#   dep-yum: dependencies, yum package names
-	#   dep-emerge: dependencies, emerge packe names
-	dependencies: ""
-	install-commands: "./configure && make"
-	update-commands: "make clean && ./configure && make"
+  # Informations to build and update
+  #   dependencies: informative dependencies
+  #   dep-apt: dependencies, apt package names
+  #   dep-yum: dependencies, yum package names
+  #   dep-emerge: dependencies, emerge packe names
+  dependencies: ""
+  install-commands: "./configure && make"
+  update-commands: "make clean && ./configure && make"
 
-	# Informations to organize
-	categories: network;gathering
-	binaries-path:
-		- nmap
-		- nc
+  # Informations to organize
+  categories: network;gathering;
+  binaries-path:
+    - nmap
+    - nc

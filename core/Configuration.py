@@ -1,5 +1,7 @@
 # LICENSE
 
+import yaml
+
 class Configuration(object):
 	"""
 	Ensure the configuration is held in only one place.
@@ -21,7 +23,18 @@ class Configuration(object):
 
 	def __init__(self, console):
 		self.console = console
-		self.test = 0
+
+		# THESE ARE TEST VALUES #
+		with open("core/core_config.yml", "r") as f:
+			self.config = yaml.load(f.read())
+
+		self.fetch_commands = self.config["fetch"]
+		self.tools_path = "tools/"
+
+		self.packages_asked_for = []
+		self.tools_asked_for = [ "nmap" ]
+		self.mode = "install"
+		# ------ END --------- #
 
 	def load_arguments(self):
 		"""
