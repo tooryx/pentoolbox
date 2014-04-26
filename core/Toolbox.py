@@ -52,13 +52,12 @@ class Toolbox(object):
 		"""
 		tool_config_file = self._config.tools_path + tool_name + ".yml"
 
-		print "Loading: %s (%s)" % (tool_name, tool_config_file)
+		print "Loading %s (%s)" % (tool_name, tool_config_file)
 
 		if not os.path.isfile(tool_config_file):
-			# FIXME: Error
-			return
+			raise Exception("Error loading config (%s)" % tool_config_file)
 
-		tool_instance = Tool(tool_name, tool_config_file)
+		tool_instance = Tool(tool_name, self._config, tool_config_file)
 		self.loaded_tools[tool_name] = tool_instance
 
 		for category in tool_instance.get_categories():
@@ -66,5 +65,3 @@ class Toolbox(object):
 				self.categories[category].append(tool_name)
 			else:
 				self.categories[category] = [ tool_name ]
-
-		print "Loaded: %s" % (tool_name)

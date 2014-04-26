@@ -7,8 +7,9 @@
 #
 # If update directive is not present, then a reinstallation is forced.
 
-# Repository based fetch
 fetch:
+  
+  # Repository based fetch
   svn:
     install: "svn co {{repository-url}} {{name}}"
     update: "svn up"
@@ -23,10 +24,10 @@ fetch:
 
   # Web fetch
   http:
-    install: "wget {{tool-url}} -O {{name}}"
+    install: "wget {{repository-url}} -O {{name}}"
 
   http-tar:
-    install: ""
+    install: "wget {{repository-url}} -O {{tmpFile1}} && tar xvf {{tmpFile1}} -C {{name}}"
 
   http-zip:
     install: ""

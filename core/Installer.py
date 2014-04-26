@@ -1,5 +1,7 @@
 # LICENSE
 
+import os
+
 class Installer(object):
 
 	def __init__(self, config, toolbox):
@@ -22,30 +24,43 @@ class Installer(object):
 		self.tools = self._toolbox.loaded_tools
 		self.categories = self._toolbox.categories
 
-		for category,tools in enumerate(self.categories):
-			self.prepare_category(category)
-			self.fetch_tools(tools)
+		self.prepare_install_dir()
+		self.prepare_temp_dir()
 
-			# FIXME: There's a possible "update" action here.
+		for category,tools in self.categories.iteritems():
+			self.prepare_category_dir(category)
+			self.process_tools(tools)
+
+		self.clean_temp_dir()
+
+	def prepare_install_dir(self):
+		self.install_dir = self._config.install_dir
+
+		if not os.path.exists(self.install_dir):
+			print "Creating %s" % self.install_dir
+			os.mkdir(self.install_dir)
+			# FIXME: chmod
+
+	def prepare_temp_dir(self):
+		self.temp_dir = self._config.temp_dir
+		pass
+
+	def prepare_category_dir(self, category):
+		self._current_category_dir = self.install_dir + "/" + category
+
+		if not os.path.exists(self._current_category_dir):
+			print "Creating %s" % (self._current_category_dir)
+			os.mkdir(self._current_category_dir)
+
+	def process_tools(self, tools_list):
+		for tool_name in tools_list:
+			tool_instance = self.tools[tool_name]
+			tool_instance.fetch(self._current_category_dir)
+
 			if self._config.mode == "install":
-				self.install_tools(tools)
+				tool_instance.install()
 			else:
-				self.update_tools(tools)
+				tool_instance.udate()
 
-	def prepare_category(self, category):
-		# If install: create_dir for category
-		# elif update: nothing
-		pass
-
-	def fetch_tools(self, tools_list):
-		# if install needs to rm then retrieve
-		# if update:
-		# 	git update
-		#   --> install for http and co
-		pass
-
-	def install_tools(self, tools_list):
-		pass
-
-	def update_tools(self, tools_list):
+	def clean_temp_dir(self):
 		pass

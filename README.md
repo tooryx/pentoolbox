@@ -1,4 +1,4 @@
-# Pentool box #
+# Pentoolbox #
 
 *This project is not ready to be used!*
 

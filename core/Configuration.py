@@ -32,8 +32,10 @@ class Configuration(object):
 		self.tools_path = "tools/"
 
 		self.packages_asked_for = []
-		self.tools_asked_for = [ "nmap" ]
+		self.tools_asked_for = [ "sqlmap" ]
 		self.mode = "install"
+		self.install_dir = "/home/tooryx/pentest/"
+		self.temp_dir = "/tmp/"
 		# ------ END --------- #
 
 	def load_arguments(self):

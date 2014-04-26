@@ -1,11 +1,11 @@
 # LICENSE
 
 # Comments regarding tool.
-nmap:
+sqlmap:
   
   # Informations to fetch
-  repository-type: svn
-  repository-url: "https://svn.nmap.org/nmap"
+  repository-type: git
+  repository-url: "https://github.com/sqlmapproject/sqlmap.git"
 
   # Informations to build and update
   #   dependencies: informative dependencies
@@ -13,11 +13,10 @@ nmap:
   #   dep-yum: dependencies, yum package names
   #   dep-emerge: dependencies, emerge packe names
   dependencies: ""
-  install-commands: "./configure && make"
-  update-commands: "make clean && ./configure && make"
+  # install-commands: ""
+  # update-commands: ""
 
   # Informations to organize
-  categories: network;gathering;
+  categories: database;web;
   binaries-path:
-    - nmap
-    - nc
+    - sqlmap.py
