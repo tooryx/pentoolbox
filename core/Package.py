@@ -1,6 +1,6 @@
 # LICENSE
 
-class Tool(object):
+class Package(object):
 
 	def __init__(self):
 		pass

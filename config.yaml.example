@@ -1,0 +1,18 @@
+# LICENSE
+
+#
+# Install directory options.
+#
+
+install-dir: "/home/tooryx/pentest/"
+install-dir-perm: 0700
+
+#
+# Organization options
+#
+
+symlink-binaries: True
+base_categories:
+	- network
+	- network/gathering
+	- gathering

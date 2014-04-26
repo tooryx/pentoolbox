@@ -1,6 +1,6 @@
 # LICENSE
 
-class Tool(object):
+class Console(object):
 
 	def __init__(self):
 		pass
