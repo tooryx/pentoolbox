@@ -1,5 +1,14 @@
 # LICENSE
 
+# This file is not intended to be modified.
+# You should edit it only if you have specific issues.
+
+tools-path: "tools/"
+temp-dir: "/tmp/"
+
+# DO NOT FORGET THE LEADING 0 !
+install-dir-chmod: 0700
+
 # Default fetch commands
 # Possible options:
 #   install: Shell command used to fetch at install.
@@ -11,23 +20,23 @@ fetch:
   
   # Repository based fetch
   svn:
-    install: "svn co {{repository-url}} {{name}}"
+    install: "svn co {{repository-url}} {{tool-full-path}}"
     update: "svn up"
 
   git:
-    install: "git clone {{repository-url}} {{name}}"
+    install: "git clone {{repository-url}} {{tool-full-path}}"
     update: "git stash && git pull && git stash pop"
 
   hg:
-    install: "hg clone {{repository-url}} {{name}}"
+    install: "hg clone {{repository-url}} {{tool-full-path}}"
     update: "hg pull"
 
   # Web fetch
   http:
-    install: "wget {{repository-url}} -O {{name}}"
+    install: "wget {{repository-url}} -O {{tool-full-path}}"
 
   http-tar:
-    install: "wget {{repository-url}} -O {{tmpFile1}} && tar xvf {{tmpFile1}} -C {{name}}"
+    install: "wget {{repository-url}} -O {{tmp-file}} && tar xvf {{tmp-file}} -C {{tool-parent-path}}"
 
   http-zip:
     install: ""

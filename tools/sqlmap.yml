@@ -17,6 +17,6 @@ sqlmap:
   # update-commands: ""
 
   # Informations to organize
-  categories: database;web;
+  categories: database;web
   binaries-path:
     - sqlmap.py

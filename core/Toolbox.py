@@ -27,6 +27,8 @@ class Toolbox(object):
 		self.loaded_tools = {}
 		self.categories = {}
 
+		self._config.console.step("Loading toolbox")
+
 	def build(self):
 		"""
 		This method builds the toolbox.
@@ -52,7 +54,8 @@ class Toolbox(object):
 		"""
 		tool_config_file = self._config.tools_path + tool_name + ".yml"
 
-		print "Loading %s (%s)" % (tool_name, tool_config_file)
+		self._config.console.substep("Loading %s (%s)" \
+			% (tool_name, tool_config_file))
 
 		if not os.path.isfile(tool_config_file):
 			raise Exception("Error loading config (%s)" % tool_config_file)

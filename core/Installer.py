@@ -25,42 +25,55 @@ class Installer(object):
 		self.categories = self._toolbox.categories
 
 		self.prepare_install_dir()
-		self.prepare_temp_dir()
+		self.temp_dir = self._config.temp_dir
 
 		for category,tools in self.categories.iteritems():
 			self.prepare_category_dir(category)
 			self.process_tools(tools)
 
-		self.clean_temp_dir()
+		self.clean_temp()
 
 	def prepare_install_dir(self):
 		self.install_dir = self._config.install_dir
 
 		if not os.path.exists(self.install_dir):
-			print "Creating %s" % self.install_dir
+			self._config.console.debug(1, "Creating directory (%s)" \
+				% self.install_dir)
 			os.mkdir(self.install_dir)
-			# FIXME: chmod
+		else:
+			self._config.console.debug(1, "Directory exists (%s)" \
+				% (self.install_dir))
 
-	def prepare_temp_dir(self):
-		self.temp_dir = self._config.temp_dir
-		pass
+		if self._config.install_dir_chmod:
+			os.chmod(self.install_dir, self._config.install_dir_chmod)
+
+	def create_tmp_file(self):
+		# FIXME: Prepare temporary file.
+		return self.temp_dir + "iamatemporaryfilefordebug"
 
 	def prepare_category_dir(self, category):
 		self._current_category_dir = self.install_dir + "/" + category
 
 		if not os.path.exists(self._current_category_dir):
-			print "Creating %s" % (self._current_category_dir)
+			self._config.console.debug(1, "Creating directory (%s)" \
+				% (self._current_category_dir))
 			os.mkdir(self._current_category_dir)
+		else:
+			self._config.console.debug(1, "Directory exists (%s)" \
+				% (self._current_category_dir))
 
 	def process_tools(self, tools_list):
 		for tool_name in tools_list:
 			tool_instance = self.tools[tool_name]
-			tool_instance.fetch(self._current_category_dir)
+			tool_tmp_file = self.create_tmp_file()
+			tool_instance.fetch(self._current_category_dir, tool_tmp_file)
 
 			if self._config.mode == "install":
 				tool_instance.install()
 			else:
-				tool_instance.udate()
+				tool_instance.update()
 
-	def clean_temp_dir(self):
+	def clean_temp(self):
+		self._config.console.step("Cleaning temp files")
+		# FIXME: Clean the temporary files.
 		pass

@@ -15,6 +15,7 @@ class Tool(object):
 		self._tool_cfg = tool_config
 		self._categories = []
 		self._real_path = None
+		self._installed = False
 
 		self.load_config()
 
@@ -46,7 +47,7 @@ class Tool(object):
 
 		return self._categories
 
-	def fetch(self, category_path):
+	def fetch(self, category_path, temp_file):
 		path = category_path + "/" + self.name
 
 		if self._real_path:
@@ -54,6 +55,8 @@ class Tool(object):
 			return
 
 		self._real_path = path
+		self._real_category_path = category_path
+
 		fetch_cmds = self._config.fetch_commands
 
 		if not self.repository_type in fetch_cmds.keys():
@@ -70,8 +73,8 @@ class Tool(object):
 		else:
 			self._fetch_update_cmd = self._fetch_install_cmd
 
-		self._fetch_install_cmd = self.populate_variables(self._fetch_install_cmd)
-		self._fetch_update_cmd = self.populate_variables(self._fetch_update_cmd)
+		self._fetch_install_cmd = self.populate_variables(self._fetch_install_cmd, temp_file)
+		self._fetch_update_cmd = self.populate_variables(self._fetch_update_cmd, temp_file)
 
 		if self._config.mode == "install":
 			self._fetch_install(path)
@@ -81,27 +84,41 @@ class Tool(object):
 		os.chdir(current_dir)
 
 	def _fetch_symlink(self, path):
-		print "Symlinking %s (%s)" % (self.name, path)
-		os.symlink(self._real_path, path)
+		if not os.path.exists(path):
+			self._config.console.debug(1, "Symlinking (%s)" % (path))
+			os.symlink(self._real_path, path)
+		else:
+			self._config.console.debug(1, "Symlink exists (%s)" % (path))
 
-	def populate_variables(self, string):
+	def populate_variables(self, string, tmp_file):
 		string = string.replace("{{name}}", self.name)
 		string = string.replace("{{repository-url}}", self.repository_url)
-
-		# FIXME: Temporary files.
+		string = string.replace("{{tool-full-path}}", self._real_path)
+		string = string.replace("{{tool-parent-path}}", self._real_category_path)
+		string = string.replace("{{tmp-file}}", tmp_file)
 
 		return string
 
 	def _fetch_install(self, path):
-		print "Fetching %s (%s)" % (self.name, path)
+		self._config.console.step("Fetching %s (%s)" % (self.name, path))
+		self._config.console.substep(self._fetch_install_cmd)
 		os.system(self._fetch_install_cmd)
 
 	def _fetch_update(self, path):
-		pass
+		self._config.console.step("Fetching %s (%s)" % (self.name, path))
+		self._config.console.substep(self._fetch_update_cmd)
+		os.system(self._fetch_update_cmd)
 
 	def install(self):
-		print "Installing: %s" % (self._real_path)
+		if self._installed:
+			return
+
+		self._installed = True
+		self._config.console.step("Installing %s (%s)" \
+			% (self.name, self._real_path))
 		pass
 
 	def update(self):
+		self._config.console.step("Updating %s (%s)" \
+			% (self.name, self._real_path))
 		pass

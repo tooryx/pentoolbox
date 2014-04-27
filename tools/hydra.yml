@@ -1,11 +1,11 @@
 # LICENSE
 
 # Comments regarding tool.
-nmap:
+hydra:
   
   # Informations to fetch
-  repository-type: svn
-  repository-url: "https://svn.nmap.org/nmap"
+  repository-type: http-tar
+  repository-url: "http://www.thc.org/releases/hydra-7.6.tar.gz"
 
   # Informations to build and update
   #   dependencies: informative dependencies
@@ -17,7 +17,6 @@ nmap:
   update-commands: "make clean && ./configure && make"
 
   # Informations to organize
-  categories: network;gathering
+  categories: bruteforce
   binaries-path:
-    - nmap
-    - nc
+    - hydra

@@ -1,0 +1,13 @@
+# LICENSE
+
+install-dir: "/home/tooryx/pentest/"
+
+tools:
+  - sqlmap
+  - hydra
+
+#  packages:
+#  - toto
+
+expand-path: True
+path-extension: bin/
