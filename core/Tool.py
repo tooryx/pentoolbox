@@ -1,7 +1,9 @@
 # LICENSE
 
 import yaml
+import shutil
 import os
+import subprocess
 
 class Tool(object):
 
@@ -36,6 +38,15 @@ class Tool(object):
 		self.repository_type = self._options["repository-type"]
 		self.repository_url = self._options["repository-url"]
 
+		self.install_commands = []
+		self.update_commands = []
+
+		if "install-commands" in self._options.keys():
+			self.install_commands = self._options["install-commands"]
+
+		if "update-commands" in self._options.keys():
+			self.update_commands = self._options["update-commands"]
+
 	def get_categories(self):
 		"""
 		FIXME: Comments.
@@ -64,7 +75,6 @@ class Tool(object):
 				% (self.repository_type, self._tool_cfg))
 
 		current_dir = os.getcwd()
-		os.chdir(category_path)
 
 		self._fetch_install_cmd = fetch_cmds[self.repository_type]["install"]
 
@@ -77,8 +87,10 @@ class Tool(object):
 		self._fetch_update_cmd = self.populate_variables(self._fetch_update_cmd, temp_file)
 
 		if self._config.mode == "install":
+			os.chdir(category_path)
 			self._fetch_install(path)
 		else:
+			os.chdir(path)			
 			self._fetch_update(path)
 
 		os.chdir(current_dir)
@@ -101,24 +113,57 @@ class Tool(object):
 
 	def _fetch_install(self, path):
 		self._config.console.step("Fetching %s (%s)" % (self.name, path))
-		self._config.console.substep(self._fetch_install_cmd)
-		os.system(self._fetch_install_cmd)
+
+		if os.path.exists(path):
+			self._config.console.exists(path)
+
+			# We only delete if it's a directory
+			# Any file would be overwritten anyway.
+			if not os.path.isfile(path):
+				shutil.rmtree(path)
+
+		self._exec_command(self._fetch_install_cmd)
 
 	def _fetch_update(self, path):
 		self._config.console.step("Fetching %s (%s)" % (self.name, path))
-		self._config.console.substep(self._fetch_update_cmd)
-		os.system(self._fetch_update_cmd)
+		self._exec_command(self._fetch_update_cmd)
+
+	def _exec_command(self, command):
+		self._config.console.substep(command[:80] + "[...]")
+
+		logFile = self._config.log_file
+		ret_val = subprocess.call(command, stderr=logFile, stdout=logFile, \
+			shell=True)
+
+		self._config.console.substep("Return code: %s" % (ret_val))
+
+	def _wrapper_install_or_update(self, action):
+		if action == "install":
+			msg = "Installing %s (%s)" % (self.name, self._real_path)
+			commands = self.install_commands
+		else:
+			msg = "Updating %s (%s)" % (self.name, self._real_path)
+			commands = self.update_commands
+
+		self._config.console.step(msg)
+
+		current_dir = os.getcwd()
+		os.chdir(self._real_path)
+		
+		if type(commands) == str:
+			commands = [ commands ]
+
+		for command in commands:
+			self._exec_command(command)
+
+		os.chdir(current_dir)
 
 	def install(self):
 		if self._installed:
 			return
 
 		self._installed = True
-		self._config.console.step("Installing %s (%s)" \
-			% (self.name, self._real_path))
-		pass
+		self._wrapper_install_or_update("install")
 
 	def update(self):
-		self._config.console.step("Updating %s (%s)" \
-			% (self.name, self._real_path))
-		pass
+		self._wrapper_install_or_update("update")		

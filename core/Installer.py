@@ -48,8 +48,9 @@ class Installer(object):
 			os.chmod(self.install_dir, self._config.install_dir_chmod)
 
 	def create_tmp_file(self):
-		# FIXME: Prepare temporary file.
-		return self.temp_dir + "iamatemporaryfilefordebug"
+		# FIXME: Really create a temporary file...
+		self._tmp_file = self.temp_dir + "iamatemporaryfilefordebug"
+		return self._tmp_file
 
 	def prepare_category_dir(self, category):
 		self._current_category_dir = self.install_dir + "/" + category
@@ -75,5 +76,4 @@ class Installer(object):
 
 	def clean_temp(self):
 		self._config.console.step("Cleaning temp files")
-		# FIXME: Clean the temporary files.
-		pass
+		os.unlink(self._tmp_file)

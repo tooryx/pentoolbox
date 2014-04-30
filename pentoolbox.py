@@ -17,6 +17,8 @@ config.load_arguments()
 config.load_core_config()
 config.load_user_config()
 
+console.dump_config(config)
+
 # Then we build the toolbox.
 toolbox = Toolbox(config)
 toolbox.build()
@@ -24,3 +26,6 @@ toolbox.build()
 # Finally, we launch the install/update process.
 installer = Installer(config, toolbox)
 installer.start()
+
+# Once everything's installed, we clear the config (delete of log file)
+config.clean()

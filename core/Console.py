@@ -13,10 +13,29 @@ class Console(object):
 	def warning(self, message):
 		print "%sWarning:%s %s" % (self._yellow, self._nocolor, message)
 
+	def prompt(self, message=None):
+		if self.force_mode:
+			return True
+
+		while True:
+			if message:
+				print message
+			raw_answer = raw_input("Do you wish to continue ? [y/N] ")
+			raw_answer = raw_answer.strip().lower()
+
+			if raw_answer in [ "y", "yes" ]:
+				return True
+			elif raw_answer in [ "n", "no" ]:
+				return False
+
 	def set_debug_level(self, level):
 		self.debug_level = level
 
+	def set_force_mode(self, force_mode):
+		self.force_mode = force_mode
+
 	def step(self, message):
+		print
 		print "%s[%s-%s]%s %s" \
 			% (self._blue, self._white, self._blue, self._nocolor, message)
 
@@ -24,8 +43,18 @@ class Console(object):
 		print "    %s*%s %s" \
 			% (self._white, self._nocolor, message)
 
-	def display_config(self, config):
-		pass
+	def dump_config(self, config):
+		self.step("Current configuration")
+		self.substep("Log file: %s" % (config.log_file.name))
+		self.substep("Install directory: %s" % (config.install_dir))
+
+		print
+		if not self.prompt():
+			exit(0)
+
+	def exists(self, path):
+		if not self.prompt("File/dir exists and will be deleted: %s" % (path)):
+			exit(0)
 
 	def debug(self, level, message):
 		if self.debug_level >= level:

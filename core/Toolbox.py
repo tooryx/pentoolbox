@@ -39,6 +39,7 @@ class Toolbox(object):
 		"""
 		tools_asked_for = self._config.tools_asked_for
 
+		# FIXME: Package are supposed to be a bit more advanced than just this...
 		for tool in self._config.packages_asked_for:
 			tools_asked_for.append(tool)
 

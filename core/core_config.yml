@@ -20,23 +20,38 @@ fetch:
   
   # Repository based fetch
   svn:
-    install: "svn co {{repository-url}} {{tool-full-path}}"
-    update: "svn up"
+    install: >
+              svn co {{repository-url}} {{tool-full-path}}
+    update:  >
+              svn up
 
   git:
-    install: "git clone {{repository-url}} {{tool-full-path}}"
-    update: "git stash && git pull && git stash pop"
+    install: >
+              git clone {{repository-url}} {{tool-full-path}}
+    update:  > 
+              git stash &&
+              git pull &&
+              git stash pop
 
   hg:
-    install: "hg clone {{repository-url}} {{tool-full-path}}"
-    update: "hg pull"
+    install: >
+              hg clone {{repository-url}} {{tool-full-path}}
+    update:  >
+              hg pull
 
   # Web fetch
   http:
-    install: "wget {{repository-url}} -O {{tool-full-path}}"
+    install: >
+              wget {{repository-url}} -O {{tool-full-path}}
 
   http-tar:
-    install: "wget {{repository-url}} -O {{tmp-file}} && tar xvf {{tmp-file}} -C {{tool-parent-path}}"
+    install: > 
+              wget {{repository-url}} -O {{tmp-file}} &&
+              mkdir -p {{tool-full-path}} &&
+              tar xvf {{tmp-file}} -C {{tool-full-path}} --strip-components 1
 
   http-zip:
-    install: ""
+    install: >
+              wget {{repository-url}} -O {{tmp-file}} &&
+              mkdir -p {{tool-full-path}} &&
+              unzip {{tmp-file}} -C {{tool-full-path}}

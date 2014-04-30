@@ -3,6 +3,7 @@
 import os
 import yaml
 import argparse
+import tempfile
 
 class Configuration(object):
 	"""
@@ -29,6 +30,7 @@ class Configuration(object):
 		self.tools_asked_for = []
 		self.install_dir = None
 		self.install_dir_chmod = None
+		self.log_file = tempfile.NamedTemporaryFile()
 
 		self.console.step("Loading configuration")
 
@@ -50,6 +52,8 @@ class Configuration(object):
 			help="Coma separated list of tools to install")
 		argparser.add_argument("-p", "--packages", \
 			help="Coma separated list of packages to install")
+		argparser.add_argument("-y", "--force-yes", action="store_true", \
+			help="Do not ask before deleting an existing dir/file")
 		argparser.add_argument("--install", action="store_true", \
 			help="Tools will be installed.")
 		argparser.add_argument("--update", action="store_true", \
@@ -59,7 +63,9 @@ class Configuration(object):
 
 		self.user_config_path = arguments.config
 		self.debug_level = arguments.debug_level
+		self.force_yes = arguments.force_yes
 		self.console.set_debug_level(self.debug_level)
+		self.console.set_force_mode(self.force_yes)
 
 		if arguments.install_dir:
 			self.install_dir = arguments.install_dir
@@ -129,3 +135,6 @@ class Configuration(object):
 
 		if not self.install_dir:
 			raise Exception("Installation directory must be specified.")
+
+	def clean(self):
+		self.log_file.close()
