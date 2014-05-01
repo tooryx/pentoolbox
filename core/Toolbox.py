@@ -1,4 +1,5 @@
-# LICENSE
+# This file is part of pentoolbox.
+# Please see LICENSE for details.
 
 import os.path
 from core.Tool import Tool

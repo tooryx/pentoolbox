@@ -1,13 +1,32 @@
-# LICENSE
+# This file is part of pentoolbox.
+# Please see LICENSE for details.
 
+# This is the directory where all the tools will be installed.
+# Each tool has categories defined. Every of those category will
+#   create a subdirectory for the tool to be installed.
+# If a tool is present in multiple directory, a symlink will
+#   be created.
 install-dir: "/home/tooryx/pentest/"
 
+# The tool list to be installed.
+# Every tool in this list will be installed regarding the tool config.
 tools:
   - sqlmap
   - hydra
 
+# The package list to be installed.
+# Every tool in an package will be installed regarding the package config.
 #  packages:
-#  - toto
+#  - testPackage
 
+# The expand path feature allow you to get all binaries in a single spot.
+# Once all the binaries are gathered around one place, you will be able to
+#   expand the PATH variable so that you can launch binaries wherever you are.
 expand-path: True
-path-extension: bin/
+
+# Must be an absolute path to the directory where binaries will be stored.
+# Once you've done this consider editing your bashrc/zshrc/... with this:
+#	PATH="${PATH}:path-extension" where path-extension is the path bellow:
+# For example if path-extension is /pentest/bin:
+#   PATH="${PATH}:/pentest/bin"
+path-extension: /home/tooryx/pentest/bin/

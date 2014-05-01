@@ -1,4 +1,5 @@
-# LICENSE
+# This file is part of pentoolbox.
+# Please see LICENSE for details.
 
 class Console(object):
 
@@ -47,6 +48,7 @@ class Console(object):
 		self.step("Current configuration")
 		self.substep("Log file: %s" % (config.log_file.name))
 		self.substep("Install directory: %s" % (config.install_dir))
+		self.substep("Path for binaries: %s" % (config.path_extension))
 
 		print
 		if not self.prompt():

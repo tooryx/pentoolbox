@@ -1,4 +1,5 @@
-# LICENSE
+# This file is part of pentoolbox.
+# Please see LICENSE for details.
 
 import os
 import yaml
@@ -135,6 +136,3 @@ class Configuration(object):
 
 		if not self.install_dir:
 			raise Exception("Installation directory must be specified.")
-
-	def clean(self):
-		self.log_file.close()

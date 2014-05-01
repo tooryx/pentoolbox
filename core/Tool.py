@@ -1,4 +1,5 @@
-# LICENSE
+# This file is part of pentoolbox.
+# Please see LICENSE for details.
 
 import yaml
 import shutil
@@ -40,12 +41,16 @@ class Tool(object):
 
 		self.install_commands = []
 		self.update_commands = []
+		self.binaries_path = []
 
 		if "install-commands" in self._options.keys():
 			self.install_commands = self._options["install-commands"]
 
 		if "update-commands" in self._options.keys():
 			self.update_commands = self._options["update-commands"]
+
+		if "binaries-path" in self._options.keys():
+			self.binaries_path = self._options["binaries-path"]
 
 	def get_categories(self):
 		"""
@@ -129,7 +134,7 @@ class Tool(object):
 		self._exec_command(self._fetch_update_cmd)
 
 	def _exec_command(self, command):
-		self._config.console.substep(command[:80] + "[...]")
+		self._config.console.substep(command[:80].strip() + "[...]")
 
 		logFile = self._config.log_file
 		ret_val = subprocess.call(command, stderr=logFile, stdout=logFile, \
@@ -146,6 +151,8 @@ class Tool(object):
 			commands = self.update_commands
 
 		self._config.console.step(msg)
+		self._config.console.substep("Dependencies (not implemented, you may experience issues)")
+		self._manage_deps()
 
 		current_dir = os.getcwd()
 		os.chdir(self._real_path)
@@ -157,6 +164,9 @@ class Tool(object):
 			self._exec_command(command)
 
 		os.chdir(current_dir)
+
+	def _manage_deps(self):
+		pass
 
 	def install(self):
 		if self._installed:

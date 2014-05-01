@@ -1,6 +1,7 @@
 #! /usr/bin/python
 
-# LICENSE
+# This file is part of pentoolbox.
+# Please see LICENSE for details.
 
 from core.Console import Console
 from core.Configuration import Configuration
@@ -26,6 +27,3 @@ toolbox.build()
 # Finally, we launch the install/update process.
 installer = Installer(config, toolbox)
 installer.start()
-
-# Once everything's installed, we clear the config (delete of log file)
-config.clean()

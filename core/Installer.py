@@ -1,6 +1,8 @@
-# LICENSE
+# This file is part of pentoolbox.
+# Please see LICENSE for detailsself.
 
 import os
+import shutil
 
 class Installer(object):
 
@@ -25,6 +27,7 @@ class Installer(object):
 		self.categories = self._toolbox.categories
 
 		self.prepare_install_dir()
+		self.prepare_binaries_dir()
 		self.temp_dir = self._config.temp_dir
 
 		for category,tools in self.categories.iteritems():
@@ -46,6 +49,19 @@ class Installer(object):
 
 		if self._config.install_dir_chmod:
 			os.chmod(self.install_dir, self._config.install_dir_chmod)
+
+	def prepare_binaries_dir(self):
+		if not self._config.expand_path:
+			return
+
+		self.path_extension = self._config.path_extension
+
+		if os.path.exists(self.path_extension):
+			self._config.console.exists(self.path_extension)
+			shutil.rmtree(self.path_extension)
+
+		os.mkdir(self.path_extension)
+		os.chmod(self.path_extension, 0750)
 
 	def create_tmp_file(self):
 		# FIXME: Really create a temporary file...
@@ -74,6 +90,31 @@ class Installer(object):
 			else:
 				tool_instance.update()
 
+			self.expand_path(tool_instance)
+
+	def expand_path(self, tool_instance):
+		"""
+		"""
+		if not self._config.expand_path:
+			return
+
+		real_path = tool_instance._real_path
+
+		for binary in tool_instance.binaries_path:
+			real_bin_path = real_path + "/" + binary
+			link_bin_path = self.path_extension + "/" + binary
+
+			if os.path.exists(link_bin_path):
+				return
+
+			if not os.path.exists(real_bin_path):
+				continue
+
+			os.chmod(real_bin_path, 0750)
+			os.symlink(real_bin_path, link_bin_path)
+
 	def clean_temp(self):
 		self._config.console.step("Cleaning temp files")
-		os.unlink(self._tmp_file)
+		
+		if os.path.exists(self._tmp_file):
+			os.unlink(self._tmp_file)

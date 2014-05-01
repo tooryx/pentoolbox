@@ -1,4 +1,5 @@
-# LICENSE
+# This file is part of pentoolbox.
+# Please see LICENSE for details.
 
 class Package(object):
 
