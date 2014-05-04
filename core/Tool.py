@@ -72,6 +72,7 @@ class Tool(object):
 
 		self._real_path = path
 		self._real_category_path = category_path
+		self.depend_cmd = self._config.dep_commands
 
 		fetch_cmds = self._config.fetch_commands
 
@@ -144,6 +145,7 @@ class Tool(object):
 
 	def _wrapper_install_or_update(self, action):
 		if action == "install":
+
 			msg = "Installing %s (%s)" % (self.name, self._real_path)
 			commands = self.install_commands
 		else:
@@ -151,8 +153,9 @@ class Tool(object):
 			commands = self.update_commands
 
 		self._config.console.step(msg)
-		self._config.console.substep("Dependencies (not implemented, you may experience issues)")
-		self._manage_deps()
+
+		if action == "install":
+			self._manage_deps()
 
 		current_dir = os.getcwd()
 		os.chdir(self._real_path)
@@ -166,7 +169,17 @@ class Tool(object):
 		os.chdir(current_dir)
 
 	def _manage_deps(self):
-		pass
+		if not "dependencies" in self._options.keys() \
+		or not self._options["dependencies"]:
+			return
+
+		self._config.console.substep("Installing dependencies")
+		dep_string = self.depend_cmd
+
+		for dependency in self._options["dependencies"]:
+			dep_string += " " + dependency
+
+		self._exec_command(dep_string)
 
 	def install(self):
 		if self._installed:
@@ -176,4 +189,4 @@ class Tool(object):
 		self._wrapper_install_or_update("install")
 
 	def update(self):
-		self._wrapper_install_or_update("update")		
+		self._wrapper_install_or_update("update")

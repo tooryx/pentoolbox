@@ -101,6 +101,7 @@ class Configuration(object):
 		self.tools_path = self.config["tools-path"]
 		self.temp_dir = self.config["temp-dir"]
 		self.install_dir_chmod = self.config["install-dir-chmod"]
+		self.dep_commands = self.config["dep-cmd"]
 
 	def load_user_config(self):
 		"""

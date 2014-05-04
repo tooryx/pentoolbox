@@ -9,12 +9,10 @@ nmap:
   repository-url: "https://svn.nmap.org/nmap"
 
   # Informations to build and update
-  #   dependencies: informative dependencies
-  #   dep-apt: dependencies, apt package names
-  #   dep-yum: dependencies, yum package names
-  #   dep-emerge: dependencies, emerge packe names
+  #   dependencies: List of package dependencies
   dependencies:
     - g++
+    - autoconf
   install-commands: "./configure && make"
   update-commands: "make clean && ./configure && make"
 
