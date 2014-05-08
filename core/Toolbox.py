@@ -27,6 +27,7 @@ class Toolbox(object):
 		self._config = config
 		self.loaded_tools = {}
 		self.categories = {}
+		self.installed_tools = {}
 
 		self._config.console.step("Loading toolbox")
 
@@ -39,12 +40,27 @@ class Toolbox(object):
 			* Grouping and listing categories of tools.
 		"""
 		tools_asked_for = self._config.tools_asked_for
+		packages_asked_for = self._config.packages_asked_for
 
-		# FIXME: Package are supposed to be a bit more advanced than just this...
-		for tool in self._config.packages_asked_for:
-			tools_asked_for.append(tool)
+		tools_installed = self._config.tools_installed
+		tools_to_install = []
 
-		map(self.load_tool, tools_asked_for)
+		if self._config.mode == "install":
+			for tool in tools_asked_for:
+				if tool in tools_installed.keys():
+					self._config.console.warning("%s already installed. Skipped." \
+						% (tool))
+				else:
+					tools_to_install.append(tool)
+
+		map(self.load_tool, tools_to_install)
+
+		for tool, path in tools_installed.iteritems():
+			instance = Tool(tool, self._config)
+			instance._real_path = path
+			self.installed_tools[tool] = instance
+
+		# FIXME: Add packages 0/
 
 	def load_tool(self, tool_name):
 		"""
@@ -54,15 +70,9 @@ class Toolbox(object):
 			* Loading the tool with its config file.
 			* Appending the tool and its categories to the list.
 		"""
-		tool_config_file = self._config.tools_path + tool_name + ".yml"
+		self._config.console.substep("Loading %s" % (tool_name))
 
-		self._config.console.substep("Loading %s (%s)" \
-			% (tool_name, tool_config_file))
-
-		if not os.path.isfile(tool_config_file):
-			raise Exception("Error loading config (%s)" % tool_config_file)
-
-		tool_instance = Tool(tool_name, self._config, tool_config_file)
+		tool_instance = Tool(tool_name, self._config)
 		self.loaded_tools[tool_name] = tool_instance
 
 		for category in tool_instance.get_categories():
@@ -70,3 +80,10 @@ class Toolbox(object):
 				self.categories[category].append(tool_name)
 			else:
 				self.categories[category] = [ tool_name ]
+
+	def save_tools(self):
+		save_file = self._config.install_dir + "/._config"
+
+		with open(save_file, "w") as f:
+			for tool, path in self._config.tools_installed.iteritems():
+				f.write("%s: %s\n" % (tool, path))

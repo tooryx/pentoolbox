@@ -4,7 +4,6 @@
 import os
 import yaml
 import argparse
-import tempfile
 
 class Configuration(object):
 	"""
@@ -29,9 +28,10 @@ class Configuration(object):
 		self.console = console
 		self.packages_asked_for = []
 		self.tools_asked_for = []
+		self.tools_installed = {}
 		self.install_dir = None
 		self.install_dir_chmod = None
-		self.log_file = tempfile.NamedTemporaryFile()
+		self.log_file = open("/tmp/pentoolbox_log", "w")
 
 		self.console.step("Loading configuration")
 
@@ -44,21 +44,25 @@ class Configuration(object):
 		argparser = argparse.ArgumentParser()
 
 		argparser.add_argument("-f", "--config", default="config.yml", \
-			help="Path to configuration file")
+			help="Path to configuration file to replace command line options")
 		argparser.add_argument("-i", "--install-dir", \
 			help="Installation directory")
 		argparser.add_argument("-d", "--debug-level", default=0, type=int, \
 			help="Defines the debug level")
 		argparser.add_argument("-t", "--tools", \
-			help="Coma separated list of tools to install")
+			help="Coma separated list of tools to install/update")
 		argparser.add_argument("-p", "--packages", \
 			help="Coma separated list of packages to install")
 		argparser.add_argument("-y", "--force-yes", action="store_true", \
 			help="Do not ask before deleting an existing dir/file")
 		argparser.add_argument("--install", action="store_true", \
-			help="Tools will be installed.")
+			help="Ask to install a new tool or set of tools")
 		argparser.add_argument("--update", action="store_true", \
-			help="Tools will be updated.")
+			help="Ask to update an installed tool")
+		argparser.add_argument("--update-all", action="store_true", \
+			help="Ask to update all installed tools")
+		argparser.add_argument("--rm", action="store_true", \
+			help="Remove tools")
 
 		arguments = argparser.parse_args()
 
@@ -75,8 +79,12 @@ class Configuration(object):
 			self.mode = "install"
 		elif arguments.update:
 			self.mode = "update"
+		elif arguments.update_all:
+			self.mode = "update-all"
+		elif arguments.rm:
+			self.mode = "remove"
 		else:
-			raise Exception("You should specify either --install or --update")
+			raise Exception("You should specify --install, --update or --update-all")
 
 		if arguments.tools:
 			self.tools_asked_for = filter(None, arguments.tools.split(","))
@@ -101,7 +109,8 @@ class Configuration(object):
 		self.tools_path = self.config["tools-path"]
 		self.temp_dir = self.config["temp-dir"]
 		self.install_dir_chmod = self.config["install-dir-chmod"]
-		self.dep_commands = self.config["dep-cmd"]
+		self.dep_cmd = self.config["dep-cmd"]
+		self.dep_installed_cmd = self.config["dep-installed-cmd"]
 
 	def load_user_config(self):
 		"""
@@ -129,7 +138,7 @@ class Configuration(object):
 
 			if self.expand_path:
 				if not "path-extension" in data.keys():
-					raise Exception("You must specify the path for $PATH extension")
+					raise Exception("You must specify the $PATH for extension")
 				else:
 					self.path_extension = data["path-extension"]
 		else:
@@ -137,3 +146,30 @@ class Configuration(object):
 
 		if not self.install_dir:
 			raise Exception("Installation directory must be specified.")
+
+	def get_tmp_file_name(self):
+		# FIXME: Really create a temporary file here.
+		return "/tmp/iamatemporaryfile"
+
+	def load_saved_tools(self):
+		if not self.install_dir:
+			raise Exception("Installation directory must be specified.")
+
+		self.console.substep("Saved installation config")
+		saved_config = self.install_dir + "/._config"
+
+		if not os.path.exists(saved_config):
+			self.console.warning("No installed config found. First install ?")
+			return
+
+		with open(saved_config, "r") as f:
+			for line in f.readlines():
+				line = line.strip()
+				if line:
+					key, value = line.split(":", 1)
+					self.tools_installed[key.strip()] = value.strip()
+
+		os.chmod(saved_config, 0600)
+
+	def end(self):
+		self.log_file.close()

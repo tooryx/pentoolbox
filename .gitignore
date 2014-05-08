@@ -1,4 +1,4 @@
 *.pyc
 #*#
 *~
-installed_tools/
+config.yml

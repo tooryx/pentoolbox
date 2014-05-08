@@ -17,6 +17,7 @@ install-dir-chmod: 0700
 #
 # If update directive is not present, then a reinstallation is forced.
 
+dep-installed-cmd: "dpkg -s"
 dep-cmd: "sudo apt-get install -y"
 
 fetch:

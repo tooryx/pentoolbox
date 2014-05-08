@@ -25,16 +25,26 @@ class Installer(object):
 		"""
 		self.tools = self._toolbox.loaded_tools
 		self.categories = self._toolbox.categories
+		self.installed_tools = self._toolbox.installed_tools
 
 		self.prepare_install_dir()
 		self.prepare_binaries_dir()
 		self.temp_dir = self._config.temp_dir
+		self._tmp_file = None
 
-		for category,tools in self.categories.iteritems():
+		for category in self.categories.keys():
 			self.prepare_category_dir(category)
-			self.process_tools(tools)
 
-		self.clean_temp()
+		if self._config.mode == "install":
+			self.install_tools(self.tools.keys())
+			map(self.expand_path, self.installed_tools.values())
+		elif self._config.mode == "update":
+			self.update_tools(self._config.tools_asked_for)
+			map(self.expand_path, self.installed_tools.values())
+		elif self._config.mode == "update-all":
+			self.update_tools(self.installed_tools)
+		elif self._config.mode == "remove":
+			self.remove_tools(self._config.tools_asked_for)
 
 	def prepare_install_dir(self):
 		self.install_dir = self._config.install_dir
@@ -56,45 +66,82 @@ class Installer(object):
 
 		self.path_extension = self._config.path_extension
 
-		if os.path.exists(self.path_extension):
-			self._config.console.exists(self.path_extension)
-			shutil.rmtree(self.path_extension)
-
-		os.mkdir(self.path_extension)
+		if not os.path.exists(self.path_extension):
+			os.mkdir(self.path_extension)
+		
 		os.chmod(self.path_extension, 0750)
 
-	def create_tmp_file(self):
-		# FIXME: Really create a temporary file...
-		self._tmp_file = self.temp_dir + "iamatemporaryfilefordebug"
-		return self._tmp_file
-
 	def prepare_category_dir(self, category):
-		self._current_category_dir = self.install_dir + "/" + category
+		category_dir = self.install_dir + "/" + category
 
-		if not os.path.exists(self._current_category_dir):
+		if not os.path.exists(category_dir):
 			self._config.console.debug(1, "Creating directory (%s)" \
-				% (self._current_category_dir))
-			os.mkdir(self._current_category_dir)
+				% (category_dir))
+			os.mkdir(category_dir)
 		else:
 			self._config.console.debug(1, "Directory exists (%s)" \
-				% (self._current_category_dir))
+				% (category_dir))
 
-	def process_tools(self, tools_list):
+	def install_tools(self, tools_list):
+		"""
+		Install mode
+		"""
 		for tool_name in tools_list:
 			tool_instance = self.tools[tool_name]
-			tool_tmp_file = self.create_tmp_file()
-			tool_instance.fetch(self._current_category_dir, tool_tmp_file)
 
-			if self._config.mode == "install":
-				tool_instance.install()
-			else:
-				tool_instance.update()
+			tool_instance.fetch()
+			tool_instance.install()
+
+			self._config.tools_installed[tool_name] = tool_instance._real_path
+			self.expand_path(tool_instance)
+
+	def update_tools(self, tools_list):
+		"""
+		update and update-all modes
+		"""
+		for tool_name in tools_list:
+			if not tool_name in self.installed_tools.keys():
+				self._config.console.warning("%s not installed. Can't update." \
+					% (tool_name))
+				continue
+
+			tool_instance = self.installed_tools[tool_name]
+
+			tool_instance.fetch()
+			tool_instance.update()
 
 			self.expand_path(tool_instance)
 
+	def remove_tools(self, tools_list):
+		for tool_name in tools_list:
+			if not tool_name in self.installed_tools.keys():
+				self._config.console.warning("%s not installed. Can't remove." \
+					% (tool_name))
+				continue
+
+			tool_instance = self.installed_tools[tool_name]
+			tool_paths = tool_instance.get_all_paths()
+
+			self._config.console.warning("Those will be deleted:")
+
+			for path in tool_paths:
+				self._config.console.warning("   %s" % (path))
+
+			if not self._config.console.prompt("Really remove %s ?" % (tool_name)):
+				exit(1)
+
+			self._config.console.step("Removing %s" % (tool_name))
+
+			for path in tool_paths:
+				if os.path.exists(path):
+					if os.path.isfile(path) or os.path.islink(path):
+						os.unlink(path)
+					else:
+						shutil.rmtree(path)
+
+			del self._config.tools_installed[tool_name]
+
 	def expand_path(self, tool_instance):
-		"""
-		"""
 		if not self._config.expand_path:
 			return
 
@@ -112,9 +159,3 @@ class Installer(object):
 
 			os.chmod(real_bin_path, 0750)
 			os.symlink(real_bin_path, link_bin_path)
-
-	def clean_temp(self):
-		self._config.console.step("Cleaning temp files")
-		
-		if os.path.exists(self._tmp_file):
-			os.unlink(self._tmp_file)
