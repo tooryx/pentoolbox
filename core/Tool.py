@@ -229,7 +229,13 @@ class Tool(object):
 
 		if dep_string == self._config.dep_cmd:
 			return
+
+		self._config.console.warning("Following dep will be installed: %s" \
+			% (dep_string))
 		
+		if not self._config.console.prompt():
+			exit(1)
+
 		self._exec_command(dep_string, fatal=True)
 
 	def install(self):

@@ -7,11 +7,10 @@ It would be great to have a bit more than 3 tools...
 For now only aptitude dependencies are handled.
 It would be great to be able to handle dependencies such as CPAN.
 
-# Argument system #
+# Path expansion #
 
-The current argument system is counter intuitive.
-Typing: `python pentoolbox.py --install -t nmap` is not cool.
-The best would be something like: `python pentoolbox.py install nmap`
+The current system is great but what about perl script, python script
+or even jar files like burp ?
 
 # Packages #
 

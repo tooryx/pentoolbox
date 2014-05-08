@@ -47,22 +47,24 @@ class Configuration(object):
 			help="Path to configuration file to replace command line options")
 		argparser.add_argument("-i", "--install-dir", \
 			help="Installation directory")
-		argparser.add_argument("-d", "--debug-level", default=0, type=int, \
-			help="Defines the debug level")
-		argparser.add_argument("-t", "--tools", \
-			help="Coma separated list of tools to install/update")
-		argparser.add_argument("-p", "--packages", \
-			help="Coma separated list of packages to install")
+		argparser.add_argument("-d", "--debug-level", default=0, \
+			action="count", help="Increase g level")
 		argparser.add_argument("-y", "--force-yes", action="store_true", \
 			help="Do not ask before deleting an existing dir/file")
-		argparser.add_argument("--install", action="store_true", \
-			help="Ask to install a new tool or set of tools")
-		argparser.add_argument("--update", action="store_true", \
-			help="Ask to update an installed tool")
-		argparser.add_argument("--update-all", action="store_true", \
-			help="Ask to update all installed tools")
-		argparser.add_argument("--rm", action="store_true", \
-			help="Remove tools")
+		argparser.add_argument("-p", "--package-mode", action="store_true", \
+			help="Allow you to specify packages instead of tools")
+
+		subparsers = argparser.add_subparsers(dest="mode")
+		install_parser = subparsers.add_parser("install", help="Install tools")
+		install_parser.add_argument("tools", nargs="+", \
+			help="List of tools to install")
+		update_parser = subparsers.add_parser("update", help="Update specific tools")
+		update_parser.add_argument("tools", nargs="+", \
+			help="List of tools to update")
+		update_all_parser = subparsers.add_parser("update-all", \
+			help="Update all installed tools")
+		rm_parser = subparsers.add_parser("remove", help="Remove specific tools")
+		rm_parser.add_argument("tools", nargs="+", help="List of tools to remove")
 
 		arguments = argparser.parse_args()
 
@@ -75,22 +77,15 @@ class Configuration(object):
 		if arguments.install_dir:
 			self.install_dir = arguments.install_dir
 
-		if arguments.install:
-			self.mode = "install"
-		elif arguments.update:
-			self.mode = "update"
-		elif arguments.update_all:
-			self.mode = "update-all"
-		elif arguments.rm:
-			self.mode = "remove"
-		else:
-			raise Exception("You should specify --install, --update or --update-all")
+		self.mode = arguments.mode
 
-		if arguments.tools:
-			self.tools_asked_for = filter(None, arguments.tools.split(","))
+		if self.mode == 'update-all':
+			arguments.tools = []
 
-		if arguments.packages:
-			self.packages_asked_for = filter(None, arguments.packages.split(","))
+		if arguments.tools and not arguments.package_mode:
+			self.tools_asked_for = arguments.tools
+		elif arguments.tools and arguments.package_mode:
+			self.packages_asked_for = arguments.tools
 
 	def load_core_config(self):
 		"""
@@ -124,12 +119,6 @@ class Configuration(object):
 
 			if not self.install_dir and "install-dir" in data.keys():
 				self.install_dir = data["install-dir"]
-
-			if not self.tools_asked_for and "tools" in data.keys():
-				self.tools_asked_for = data["tools"]
-
-			if not self.packages_asked_for and "packages" in data.keys():
-				self.packages_asked_for = data["packages"]
 
 			if not "expand-path" in data.keys():
 				self.expand_path = False

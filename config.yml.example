@@ -6,18 +6,7 @@
 #   create a subdirectory for the tool to be installed.
 # If a tool is present in multiple directory, a symlink will
 #   be created.
-install-dir: "/home/tooryx/pentest/"
-
-# The tool list to be installed.
-# Every tool in this list will be installed regarding the tool config.
-tools:
-  - sqlmap
-  - hydra
-
-# The package list to be installed.
-# Every tool in an package will be installed regarding the package config.
-#  packages:
-#  - testPackage
+install-dir: "/home/youruser/pentest/"
 
 # The expand path feature allow you to get all binaries in a single spot.
 # Once all the binaries are gathered around one place, you will be able to
@@ -29,4 +18,4 @@ expand-path: True
 #	PATH="${PATH}:path-extension" where path-extension is the path bellow:
 # For example if path-extension is /pentest/bin:
 #   PATH="${PATH}:/pentest/bin"
-path-extension: /home/tooryx/pentest/bin/
+path-extension: /home/youruser/pentest/bin/
