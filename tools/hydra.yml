@@ -9,11 +9,11 @@ hydra:
   repository-url: "http://www.thc.org/releases/hydra-7.6.tar.gz"
 
   # Informations to build and update
-  #   dependencies: informative dependencies
-  #   dep-apt: dependencies, apt package names
-  #   dep-yum: dependencies, yum package names
-  #   dep-emerge: dependencies, emerge packe names
+  #   dependencies: List of package dependencies
   dependencies: ""
+
+  # Commands used for installation and update.
+  # Those are executed after tool fetch.
   install-commands: "./configure && make"
   update-commands: "make clean && ./configure && make"
 

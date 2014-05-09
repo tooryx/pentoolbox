@@ -25,6 +25,12 @@ class Configuration(object):
 		return cls._instance
 
 	def __init__(self, console):
+		"""
+		Instanciate the configuration.
+
+		Parameters
+			console: The current pentoolbox console.
+		"""
 		self.console = console
 		self.packages_asked_for = []
 		self.tools_asked_for = []
@@ -38,7 +44,6 @@ class Configuration(object):
 	def load_arguments(self):
 		"""
 		Load command line arguments.
-		Those configuration option have the highest priority.
 		"""
 		self.console.substep("Command line arguments")
 		argparser = argparse.ArgumentParser()
@@ -102,7 +107,6 @@ class Configuration(object):
 
 		self.fetch_commands = self.config["fetch"]
 		self.tools_path = self.config["tools-path"]
-		self.temp_dir = self.config["temp-dir"]
 		self.install_dir_chmod = self.config["install-dir-chmod"]
 		self.dep_cmd = self.config["dep-cmd"]
 		self.dep_installed_cmd = self.config["dep-installed-cmd"]
@@ -137,10 +141,19 @@ class Configuration(object):
 			raise Exception("Installation directory must be specified.")
 
 	def get_tmp_file_name(self):
+		"""
+		If necessary, the Configuration object can create temporary file name.
+		This function does this.
+		"""
 		# FIXME: Really create a temporary file here.
 		return "/tmp/iamatemporaryfile"
 
 	def load_saved_tools(self):
+		"""
+		Load the list of already installed tools contained in the ._config file.
+		The format of this file is:
+			tool_name: tool/main/install/path
+		"""
 		if not self.install_dir:
 			raise Exception("Installation directory must be specified.")
 
@@ -161,4 +174,7 @@ class Configuration(object):
 		os.chmod(saved_config, 0600)
 
 	def end(self):
+		"""
+		Ensure the log file is closed.
+		"""
 		self.log_file.close()

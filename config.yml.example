@@ -3,7 +3,7 @@
 
 # This is the directory where all the tools will be installed.
 # Each tool has categories defined. Every of those category will
-#   create a subdirectory for the tool to be installed.
+#   create a subdirectory in the install directory.
 # If a tool is present in multiple directory, a symlink will
 #   be created.
 install-dir: "/home/youruser/pentest/"
@@ -14,7 +14,7 @@ install-dir: "/home/youruser/pentest/"
 expand-path: True
 
 # Must be an absolute path to the directory where binaries will be stored.
-# Once you've done this consider editing your bashrc/zshrc/... with this:
+# Once you've done this, consider editing your bashrc/zshrc/... with this:
 #	PATH="${PATH}:path-extension" where path-extension is the path bellow:
 # For example if path-extension is /pentest/bin:
 #   PATH="${PATH}:/pentest/bin"

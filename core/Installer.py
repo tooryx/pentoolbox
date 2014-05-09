@@ -7,6 +7,13 @@ import shutil
 class Installer(object):
 
 	def __init__(self, config, toolbox):
+		"""
+		Instanciate the Installer.
+
+		Parameters
+			toolbox: An instance of toolbox object.
+			config: The pentoolbox config object.
+		"""
 		self._toolbox = toolbox
 		self._config = config
 
@@ -47,6 +54,10 @@ class Installer(object):
 			self.remove_tools(self._config.tools_asked_for)
 
 	def prepare_install_dir(self):
+		"""
+		Creates the installation directory and change its permissions.
+		This can be parametized in the user_config and the core_config files.
+		"""
 		self.install_dir = self._config.install_dir
 
 		if not os.path.exists(self.install_dir):
@@ -61,6 +72,11 @@ class Installer(object):
 			os.chmod(self.install_dir, self._config.install_dir_chmod)
 
 	def prepare_binaries_dir(self):
+		"""
+		If the user asked for path expansion, there's a need to create
+			the directory which will contains all binaries.
+		This folder permissions are set to 750 once created.
+		"""
 		if not self._config.expand_path:
 			return
 
@@ -72,6 +88,12 @@ class Installer(object):
 		os.chmod(self.path_extension, 0750)
 
 	def prepare_category_dir(self, category):
+		"""
+		This creates a directory in the install-dir for a given category.
+
+		Parameters
+			category: The category name.
+		"""
 		category_dir = self.install_dir + "/" + category
 
 		if not os.path.exists(category_dir):
@@ -84,7 +106,14 @@ class Installer(object):
 
 	def install_tools(self, tools_list):
 		"""
-		Install mode
+		Install mode:
+			- Fetch the tool
+			- Install it
+			- Add it to list of installed tools
+			- Expand the path option
+
+		Parameters:
+			tools_list: List of tools to be installed.
 		"""
 		for tool_name in tools_list:
 			tool_instance = self.tools[tool_name]
@@ -97,7 +126,13 @@ class Installer(object):
 
 	def update_tools(self, tools_list):
 		"""
-		update and update-all modes
+		Update and update-all modes:
+			- Fetch the tool (if necessary)
+			- Update the tool
+			- Expand path option
+
+		Parameters:
+			tools_list: List of tools to be updated.
 		"""
 		for tool_name in tools_list:
 			if not tool_name in self.installed_tools.keys():
@@ -113,6 +148,16 @@ class Installer(object):
 			self.expand_path(tool_instance)
 
 	def remove_tools(self, tools_list):
+		"""
+		Remove mode:
+			- Retrieve tool installation paths
+			- Makes sure the user really want to delete those paths
+			- Remove those paths (file, symlink and directories)
+			- Remove the tool from list of installed tools
+
+		Parameters:
+			tools_list: List of tools to be removed.
+		"""
 		for tool_name in tools_list:
 			if not tool_name in self.installed_tools.keys():
 				self._config.console.warning("%s not installed. Can't remove." \
@@ -142,6 +187,13 @@ class Installer(object):
 			del self._config.tools_installed[tool_name]
 
 	def expand_path(self, tool_instance):
+		"""
+		If the user asked for the path expansion we shall copy all the
+			current tool binaries to the binary directory.
+
+		Parameters
+			tool_instance: The current tool instance (to access binaries list)
+		"""
 		if not self._config.expand_path:
 			return
 

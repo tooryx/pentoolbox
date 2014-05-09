@@ -13,6 +13,9 @@ nmap:
   dependencies:
     - g++
     - autoconf
+
+  # Commands used for installation and update.
+  # Those are executed after tool fetch.
   install-commands: "./configure && make"
   update-commands: "make clean && ./configure && make"
 

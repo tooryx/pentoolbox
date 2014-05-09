@@ -8,21 +8,23 @@ from core.Configuration import Configuration
 from core.Toolbox import Toolbox
 from core.Installer import Installer
 
-# First we create an output mode.
-# This will generates debug and output messages.
+# First the output console is loaded.
+# This will generate output messages.
 console = Console()
 console.banner()
 
-# We need to load the configuration.
+# Then the configuration manager.
 config = Configuration(console)
 config.load_arguments()
 config.load_core_config()
 config.load_user_config()
 config.load_saved_tools()
 
+# We print some information to the screen...
 console.dump_config(config)
 console.dump_installed_tools(config)
 
+# ...and ensure that's what the user asked for.
 if not console.prompt():
 	exit(1)
 
@@ -30,11 +32,12 @@ if not console.prompt():
 toolbox = Toolbox(config)
 toolbox.build()
 
-# Finally, we launch the install/update process.
+# We launch the install/update process.
 installer = Installer(config, toolbox)
 installer.start()
 
-# Before exiting, we add the installed tools to a config file.
-# This file is: {{install-dir}}/._config
+# Finally, we save the current tools in {{install-dir}}/._config
 toolbox.save_tools()
+
+# And we properly close the configuration.
 config.end()

@@ -23,3 +23,8 @@ It would also be cool to be able to download things such as wordlists.
 What about downloading configuration files from a repository/whatever to
 automatically apply the configuration to an installed tool ?
 Obviously, this would go in the package section.
+
+# Minor changes #
+
+  * There are still FIXME in the code
+  * The logFile of Configuration should be defined in core_config

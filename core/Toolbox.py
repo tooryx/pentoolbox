@@ -6,23 +6,34 @@ from core.Tool import Tool
 
 class Toolbox(object):
 	"""
-	FIXME: Comments.
+	The toolbox is a box of tool.
+	It is reponsible for instanciating all the tool and giving a
+		way to manage those tools.
 	"""
 
 	def __init__(self, config):
 		"""
-		FIXME: Comments.
+		Initiates the Toolbox.
 
-		self.loaded_tools has the following form:
-			{
-				tool_name:
-					tool_instance
-			}
-		self.categories has the following form:
-			{
-				category_name:
-					[ tool_name, tool_name ]
-			}
+		Important attributes
+			self.loaded_tools has the following form:
+				{
+					tool_name:
+						tool_instance
+				}
+			self.categories has the following form:
+				{
+					category_name:
+						[ tool_name, tool_name ]
+				}
+			self.installed_tools has the following form:
+				{
+					tool_name:
+						current_install_path
+				}
+
+		Parameters
+			config: The current pentoolbox config object.
 		"""
 		self._config = config
 		self.loaded_tools = {}
@@ -36,8 +47,8 @@ class Toolbox(object):
 		This method builds the toolbox.
 		Building means:
 			* Retrieving the list of tools to be installed.
-			* Loading information of each of these tools.
-			* Grouping and listing categories of tools.
+			* Retrieving the list of already installed tools.
+			* Loading information for each of these tools.
 		"""
 		tools_asked_for = self._config.tools_asked_for
 		packages_asked_for = self._config.packages_asked_for
@@ -54,21 +65,37 @@ class Toolbox(object):
 					tools_to_install.append(tool)
 
 		map(self.load_tool, tools_to_install)
+		map(self.load_installed_tool, list(tools.tools_installed.iteritems()))
 
+		# FIXME: Add packages 0/
+
+	def load_installed_tool(self, (tool, path)):
+		"""
+		Load an already installed tool given his name.
+		Once its loaded, its main installation path is to be updated.
+
+		Parameters
+			This is a tuple.
+			tool: The tool name.
+			path: The tool's main installation path.
+		"""
 		for tool, path in tools_installed.iteritems():
 			instance = Tool(tool, self._config)
 			instance._real_path = path
 			self.installed_tools[tool] = instance
 
-		# FIXME: Add packages 0/
-
 	def load_tool(self, tool_name):
 		"""
 		Load a specific tool given his name.
+		This function is called only for new installation.
+		Installed tool are instanciated in the build method.
+
 		This function is reponsible for:
-			* Ensuring the tool's configuration file is present.
-			* Loading the tool with its config file.
+			* Instanciating the tool
 			* Appending the tool and its categories to the list.
+
+		Parameters
+			tool_name: The tool name.
 		"""
 		self._config.console.substep("Loading %s" % (tool_name))
 
@@ -82,6 +109,10 @@ class Toolbox(object):
 				self.categories[category] = [ tool_name ]
 
 	def save_tools(self):
+		"""
+		Save the list of current installed tool to a file for later use.
+		This basically helps the tool knowing which tool is installed.
+		"""
 		save_file = self._config.install_dir + "/._config"
 
 		with open(save_file, "w") as f:

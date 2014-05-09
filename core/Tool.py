@@ -7,18 +7,30 @@ import os
 import subprocess
 
 class Tool(object):
+	"""
+	A tool is what the user will want to install.
+	This object is responsible for:
+		- Loading a tool configuration
+		- Fetching a tool from its repo/website
+		- Installing the tool (each tool as its own set of commands)
+		- Creating symlink for different categories
+		- Installing dependencies
+		- Updating the tool
+	"""
 
 	def __init__(self, tool_name, global_config):
 		"""
-		FIXME: Comments. Explain config_file
-		At this point, config_file's exisence has already been checked.
+		Create the instance.
+		
+		Parameters
+			tool_name: The name of the tool. Used to load config file.
+			global_config: The current pentoolbox configuration object.
 		"""
 		self.name = tool_name
 		self._config = global_config
 		self._tool_cfg = self._config.tools_path + tool_name + ".yml"
 		self._categories = []
 		self._real_path = None
-		self._installed = False
 		self._tmp_files = []
 
 		if not os.path.isfile(self._tool_cfg):
@@ -27,6 +39,11 @@ class Tool(object):
 		self.load_config()
 
 	def load_config(self):
+		"""
+		Load the configuration file (.yml) and populates variables.
+		For example, the repository type or url or the command used to install
+			the tool.
+		"""
 		with open(self._tool_cfg, "r") as c:
 			data = yaml.load(c.read())
 
@@ -59,6 +76,12 @@ class Tool(object):
 		self.get_categories()
 
 	def get_categories(self):
+		"""
+		Retrieve the list of categories the tool is part of.
+		
+		Return value
+			List of categories(string)
+		"""
 		if not self._categories and "categories" in self._options.keys():
 			categories = filter(None, self._options["categories"].split(";"))
 			for category in categories:
@@ -68,7 +91,12 @@ class Tool(object):
 
 	def get_all_paths(self):
 		"""
-		Warning ! When this function is called _real_path should be set.
+		Retrieve all paths the tool may be installed under.
+		This contains the binaries installed in the binaries directory
+			when expand path option is enabled.
+		
+		Return value
+			List of paths(string)
 		"""
 		res = [ self._real_path ]
 
@@ -81,8 +109,25 @@ class Tool(object):
 		return list(set(res))
 
 	def fetch(self):
+		"""
+		Find the best way to fetch the tool.
+		This function does the following:
+			- Retrieve the main folder of installation
+			- Creates a symlink for each other categories
+			- Retrieve the repository type and its fetch commands
+			- Change variables in those commands
+			- If this is an installation:
+				* Change  directory for the *category* folder (not the tool's one)
+				* Launch the installation specialized fetch action
+			- If this is an update:
+				* Change directory for the *tool* folder
+				* Launch the update specialied fetch action
+			- Clean temporary files that may have been created.
+			- Change directory for last directory
+		"""
 		if len(self._categories) == 0:
 			raise Exception("Tool %s has no defined categories." % (self.name))
+
 		self._real_category_path = self._config.install_dir + "/" + self._categories[0]
 		self._real_path = self._real_category_path + "/" + self.name
 
@@ -120,6 +165,14 @@ class Tool(object):
 		os.chdir(current_dir)
 
 	def _fetch_symlink(self, path):
+		"""
+		This function is responsible for creating the symlink.
+		It's called when a category is not the main one and the tool should
+			be symlinked (obviously).
+
+		Parameter
+			path: The absolute path of the symlink (with symlink name)
+		"""
 		if not os.path.exists(path):
 			self._config.console.debug(1, "Symlinking (%s)" % (path))
 			os.symlink(self._real_path, path)
@@ -127,6 +180,18 @@ class Tool(object):
 			self._config.console.debug(1, "Symlink/dir exists (%s)" % (path))
 
 	def populate_variables(self, string):
+		"""
+		When creating fetch commands in the core_config file you have the
+			possibility to use custom variables.
+		Those variables are modified here.
+		If necessary, this function also ask for the creation of a temporary file.
+
+		Parameters
+			string: The string to modify the variables in.
+
+		Return value
+			The modified string
+		"""
 		string = string.replace("{{name}}", self.name)
 		string = string.replace("{{repository-url}}", self.repository_url)
 		string = string.replace("{{tool-full-path}}", self._real_path)
@@ -140,6 +205,14 @@ class Tool(object):
 		return string
 
 	def _fetch_install(self, path):
+		"""
+		This is the install specialized fetch action.
+		- Ask the user and delete the tool directory if exists
+		- Execute the fetch command corresponding to install
+
+		Parameters
+			path: The path of the installation.
+		"""
 		self._config.console.step("Fetching %s (%s)" % (self.name, path))
 
 		if os.path.exists(path):
@@ -153,10 +226,26 @@ class Tool(object):
 		self._exec_command(self._fetch_install_cmd)
 
 	def _fetch_update(self, path):
+		"""
+		This is the update specialized fetch action.
+		It just launch the update command.
+
+		Parameters
+			path: The path of the installation.
+		"""
 		self._config.console.step("Fetching %s (%s)" % (self.name, path))
 		self._exec_command(self._fetch_update_cmd)
 
 	def _exec_command(self, command, fatal=False):
+		"""
+		This is a helper for command execution.
+		It will execute a command by retrieving the pentoolbox logFile and
+			appending stdout/stderr of tool to this log file.
+
+		Parameters
+			command: The command  to execute.
+			fatal: Is the command fatal to program ? (if return value not 0)
+		"""
 		command = command.strip()
 
 		if len(command) > 80:
@@ -178,7 +267,33 @@ class Tool(object):
 
 		self._config.console.substep(msg)
 
+	def install(self):
+		"""
+		Launch tool installation by calling the wrapper in install mode.
+		"""
+		self._wrapper_install_or_update("install")
+
+	def update(self):
+		"""
+		Launch tool update by calling the wrapper in update mode.
+		"""
+		self._wrapper_install_or_update("update")
+
 	def _wrapper_install_or_update(self, action):
+		"""
+		As its name state this is a wrapper to launch either:
+			- An installation
+			- An update
+
+		This function does the following:
+			- Retrieve the commands (install commands or update commands)
+			- If this is an install, we need to ensure dependencies are ok.
+			- Change dir to the tool directory (which has been created by fetch)
+			- Launch the commands
+
+		Parameters
+			action: Defines if this is an install or an update.
+		"""
 		if action == "install":
 			msg = "Installing %s (%s)" % (self.name, self._real_path)
 			commands = self.install_commands
@@ -205,6 +320,16 @@ class Tool(object):
 		os.chdir(current_dir)
 
 	def is_dependency_installed(self, depName):
+		"""
+		Checks if a depedency is installed.
+		It uses the command in the core_config file to do so.
+
+		Parameters
+			depName: The dependency name.
+
+		Return value
+			Is the dependency installed ? (bool)
+		"""
 		command = self._config.dep_installed_cmd + " " + depName
 		logFile = open(os.devnull, "w")
 
@@ -216,6 +341,9 @@ class Tool(object):
 		return (ret_val == 0)
 
 	def _manage_deps(self):
+		"""
+		Checks and install all dependencies needed by a tool.
+		"""
 		if not "dependencies" in self._options.keys() \
 		or not self._options["dependencies"]:
 			return
@@ -238,17 +366,11 @@ class Tool(object):
 
 		self._exec_command(dep_string, fatal=True)
 
-	def install(self):
-		if self._installed:
-			return
-
-		self._installed = True
-		self._wrapper_install_or_update("install")
-
-	def update(self):
-		self._wrapper_install_or_update("update")
-
 	def clean_tmp(self):
+		"""
+		Clean all temporary files created.
+		(Mainly by fetch)
+		"""
 		for f in self._tmp_files:
 			if os.path.exists(f):
 				os.unlink(f)

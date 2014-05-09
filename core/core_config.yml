@@ -5,10 +5,16 @@
 # You should edit it only if you have specific issues.
 
 tools-path: "tools/"
-temp-dir: "/tmp/"
 
 # DO NOT FORGET THE LEADING 0 !
 install-dir-chmod: 0700
+
+# Command used for dependencies issues
+# Check if a package is installed.
+dep-installed-cmd: "dpkg -s"
+
+# Install a list of packages
+dep-cmd: "sudo apt-get install -y"
 
 # Default fetch commands
 # Possible options:
@@ -17,12 +23,8 @@ install-dir-chmod: 0700
 #
 # If update directive is not present, then a reinstallation is forced.
 
-dep-installed-cmd: "dpkg -s"
-dep-cmd: "sudo apt-get install -y"
-
 fetch:
   
-  # Repository based fetch
   svn:
     install: >
               svn co {{repository-url}} {{tool-full-path}}
@@ -43,7 +45,6 @@ fetch:
     update:  >
               hg pull
 
-  # Web fetch
   http:
     install: >
               wget {{repository-url}} -O {{tool-full-path}}
