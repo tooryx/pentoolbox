@@ -1,5 +1,5 @@
 # This file is part of pentoolbox.
-# Please see LICENSE for detailsself.
+# Please see LICENSE for detail.
 
 import os
 import shutil
